@@ -68,6 +68,24 @@ jobs:
             --xcargs '-test-timeouts-enabled YES -maximum-test-execution-time-allowance 300 -default-test-execution-time-allowance 60' \
             || formatFailures
 
+      - name: Archive .app bundle
+        if: success()
+        run: |
+          mkdir -p artifacts
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Signal.app" | head -n 1)
+          if [ -d "$APP_PATH" ]; then
+            zip -r artifacts/Signal.app.zip "$APP_PATH"
+          else
+            echo "Signal.app not found"
+            exit 1
+          fi
+
+      - name: Upload .app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS App Bundle
+          path: artifacts/Signal.app.zip
+
       - name: Upload build logs
         uses: actions/upload-artifact@v4
         if: failure()
